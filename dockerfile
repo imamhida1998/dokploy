@@ -1,28 +1,21 @@
-FROM golang:1.21
-
-## We create an /app directory within our
-## image that will hold our application source
-## files
-RUN mkdir /app
-
-## We specify that we now wish to execute
-## any further commands inside our /app
-## directory
+# Stage 1 - Build
+FROM golang:1.21-alpine AS builder
 WORKDIR /app
 
+# Copy dependency files (tidak error kalau go.sum belum ada)
 COPY go.mod ./
 COPY go.sum* ./
-RUN go mod downloadß
+RUN go mod tidy
 
-## We copy everything in the root directory
-## into our /app directory
-ADD . /app
+# Copy source code
+COPY . .
 
-## we run go build to compile the binary
-## executable of our Go program
+# Build binary
 RUN go build -o main .
 
-
-## Our start command which kicks off
-## our newly created binary executable
-CMD ["/app/main"]
+# Stage 2 - Runtime
+FROM alpine:latest
+WORKDIR /root/
+COPY --from=builder /app/main .
+EXPOSE 8080
+CMD ["./main"]
