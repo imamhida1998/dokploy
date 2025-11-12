@@ -2,20 +2,25 @@
 FROM golang:1.25-alpine AS builder
 WORKDIR /app
 
-# Copy dependency files
 COPY go.mod ./
 COPY go.sum* ./
 RUN go mod tidy
 
-# Copy seluruh source code
 COPY . .
-
-# Build binary
 RUN go build -o main .
 
 # Stage 2 - Runtime
 FROM alpine:latest
 WORKDIR /root/
+
+# Copy hasil build
 COPY --from=builder /app/main .
-EXPOSE 8080
+
+# Tentukan default port, bisa dioverride dari Dokploy
+ENV PORT=8080
+
+# Gunakan ARG agar EXPOSE mengikuti ENV (lihat bagian bawah)
+ARG PORT
+EXPOSE ${PORT}
+
 CMD ["./main"]
