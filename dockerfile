@@ -1,13 +1,13 @@
 # Stage 1 - Build
-FROM golang:1.21-alpine AS builder
+FROM golang:1.25-alpine AS builder
 WORKDIR /app
 
-# Copy dependency files (tidak error kalau go.sum belum ada)
+# Copy dependency files
 COPY go.mod ./
 COPY go.sum* ./
 RUN go mod tidy
 
-# Copy source code
+# Copy seluruh source code
 COPY . .
 
 # Build binary
